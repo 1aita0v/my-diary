@@ -1,6 +1,6 @@
 {
-  "name": "我的日记",
-  "short_name": "日记",
+  "name": "美美的日记",
+  "short_name": "美美日记",
   "description": "写日记，保存长图",
   "start_url": "./index.html",
   "display": "standalone",

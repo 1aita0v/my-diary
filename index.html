@@ -3,460 +3,486 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>我的日记</title>
+<title>美美的日记</title>
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="我的日记">
+<meta name="apple-mobile-web-app-title" content="美美的日记">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#f5f0eb">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=LXGW+WenKai:wght@300;400;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300;400;600;700&family=LXGW+WenKai:wght@300;400;700&display=swap');
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  *{margin:0;padding:0;box-sizing:border-box}
 
-  :root {
-    --bg: #f7f3ee;
-    --card: #ffffff;
-    --text: #3a3a3a;
-    --sub: #a0978e;
-    --accent: #d4a574;
-    --accent2: #c08b5c;
-    --border: #e8e2d9;
-    --serif: 'Noto Serif SC', 'Songti SC', 'STSong', serif;
-    --body: 'LXGW WenKai', -apple-system, 'PingFang SC', sans-serif;
+  :root{
+    --bg:#f8f1e4;--text:#2e2e2e;--sub:#a89880;
+    --accent:#d4a24e;--border:#e5d9c4;
+    --serif:'Noto Serif SC','Songti SC',serif;
+    --body:'LXGW WenKai','Noto Serif SC','Songti SC',serif;
   }
 
-  body {
-    font-family: var(--body);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding-bottom: env(safe-area-inset-bottom);
+  body{font-family:var(--body);background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:env(safe-area-inset-bottom)}
+
+  /* 顶栏 */
+  .toolbar{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:rgba(248,241,228,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  .toolbar .logo{font-family:var(--serif);font-size:15px;font-weight:600;color:var(--text);letter-spacing:3px}
+  .toolbar button{background:var(--accent);color:#fff;border:none;border-radius:18px;padding:7px 18px;font-size:13px;font-family:var(--body);cursor:pointer;letter-spacing:1px}
+  .toolbar button:active{opacity:.7;transform:scale(.96)}
+
+  /* 一体化卡片 */
+  .diary-card{
+    margin:20px 16px 40px;max-width:560px;margin-left:auto;margin-right:auto;
+    background:#faf0d8;border-radius:16px;overflow:hidden;
+    box-shadow:0 2px 20px rgba(0,0,0,.05),inset 0 0 60px rgba(200,170,110,.08);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
   }
 
-  /* ===== 顶栏 ===== */
-  .toolbar {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 20px;
-    background: rgba(247,243,238,.92);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
-  .toolbar .logo {
-    font-family: var(--serif);
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--text);
-    letter-spacing: 2px;
-  }
-  .toolbar button {
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 18px;
-    padding: 7px 18px;
-    font-size: 13px;
-    font-family: var(--body);
-    font-weight: 400;
-    cursor: pointer;
-    transition: all .2s;
-    letter-spacing: 1px;
-  }
-  .toolbar button:active { opacity: .7; transform: scale(.96); }
+  .card-header{padding:24px 24px 20px;display:flex;align-items:stretch}
 
-  /* ===== 日期头部 ===== */
-  .date-header {
-    padding: 28px 24px 0;
-    max-width: 600px;
-    margin: 0 auto;
-  }
-  .date-header .day {
-    font-family: var(--serif);
-    font-size: 48px;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1;
-  }
-  .date-header .meta {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-top: 6px;
-    font-size: 13px;
-    color: var(--sub);
-    letter-spacing: 1px;
-  }
-  .date-header .meta .dot {
-    width: 3px; height: 3px;
-    background: var(--accent);
-    border-radius: 50%;
-  }
+  /* 左侧竖排：日期+星期 */
+  .cal-side-left{writing-mode:vertical-rl;display:flex;align-items:center;gap:12px;padding:8px 14px 8px 0;font-family:var(--serif);font-size:13px;color:#8a8078;letter-spacing:4px;border-right:.5px solid var(--border)}
 
-  /* ===== 编辑区 ===== */
-  .editor {
-    padding: 24px 24px 40px;
-    max-width: 600px;
-    margin: 0 auto;
-  }
-  .title-input {
-    width: 100%;
-    border: none;
-    outline: none;
-    font-family: var(--serif);
-    font-size: 20px;
-    font-weight: 600;
-    background: transparent;
-    color: var(--text);
-    margin-bottom: 20px;
-    padding: 8px 0;
-    letter-spacing: 1px;
-  }
-  .title-input::placeholder { color: #ccc; font-weight: 400; }
+  /* 中间大号日期+名句 */
+  .cal-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0}
+  .cal-day{font-family:var(--serif);font-size:100px;font-weight:700;line-height:1;color:var(--text)}
+  .cal-quote{padding:0 8px;margin-top:12px;text-align:center}
+  .cal-quote-text{font-family:var(--serif);font-size:14px;font-weight:400;color:#6a6058;line-height:1.9;letter-spacing:1px}
+  .cal-quote-src{font-size:11px;color:#a89880;margin-top:8px;letter-spacing:2px}
 
-  .divider {
-    width: 32px;
-    height: 1.5px;
-    background: var(--accent);
-    margin-bottom: 20px;
-    border-radius: 1px;
-  }
+  /* 右侧竖排：趣味文案 */
+  .cal-side-right{writing-mode:vertical-rl;display:flex;align-items:center;padding:8px 0 8px 14px;letter-spacing:4px;border-left:.5px solid var(--border)}
+  .cal-side-right .cal-hint{font-family:var(--serif);font-size:13px;color:var(--accent);font-weight:600;letter-spacing:5px}
 
-  .content-input {
-    width: 100%;
-    min-height: 360px;
-    border: none;
-    outline: none;
-    font-family: var(--body);
-    font-size: 15px;
-    line-height: 2.2;
-    background: transparent;
-    color: var(--text);
-    resize: none;
-    letter-spacing: .5px;
+
+  /* 写日记区（卡片内） */
+  .card-editor{padding:0 32px 32px;border-top:.5px solid var(--border);margin-top:4px}
+  .editor-label{display:none}
+  .content-input{
+    width:100%;min-height:300px;border:none;outline:none;
+    font-family:var(--body);font-size:16px;line-height:1.6;
+    color:#4a4038;resize:none;letter-spacing:1px;
+    margin-top:20px;
+    background:repeating-linear-gradient(transparent,transparent 31px,rgba(180,160,120,.1) 31px,rgba(180,160,120,.1) 32px);
+    background-size:100% 32px;
   }
-  .content-input::placeholder { color: #ccc; }
+  .content-input::placeholder{color:#c4b8a4;font-size:15px}
 
   /* ===== 渲染卡片（长图） ===== */
-  .render-card {
-    position: absolute;
-    left: -9999px;
-    top: 0;
-    width: 375px;
-    background: linear-gradient(180deg, #faf6f1 0%, #f5efe8 100%);
-    font-family: -apple-system, 'PingFang SC', sans-serif;
-  }
+  /* ===== 渲染卡片（长图） ===== */
+  .render-card{position:absolute;left:-9999px;top:0;width:375px;background:#faf0d8;font-family:'Noto Serif SC','Songti SC',serif;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E")}
+  .rc-inner{padding:0}
+  .rc-head{display:flex;align-items:stretch;padding:16px 14px}
+  .rc-sl{writing-mode:vertical-rl;display:flex;align-items:center;gap:8px;padding:4px 10px 4px 0;font-size:10px;color:#8a8078;letter-spacing:3px;border-right:.5px solid var(--border)}
+  .rc-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 8px}
+  .rc-day{font-size:56px;font-weight:700;line-height:1;color:var(--text)}
+  .rc-cq{margin-top:6px;text-align:center;padding:0 4px}
+  .rc-cq-t{font-size:11px;font-weight:400;color:#6a6058;line-height:1.8;letter-spacing:.5px}
+  .rc-cq-s{font-size:9px;color:#a89880;margin-top:4px;letter-spacing:1.5px}
+  .rc-sr{writing-mode:vertical-rl;display:flex;align-items:center;padding:4px 0 4px 10px;letter-spacing:3px;border-left:.5px solid var(--border)}
+  .rc-sr .rc-hint{font-size:10px;color:var(--accent);font-weight:600;letter-spacing:4px}
+  .rc-div{height:.5px;background:var(--border);margin:0 24px}
+  .rc-body-wrap{padding:14px 32px 28px}
+  .rc-body{font-family:'LXGW WenKai','Noto Serif SC','Songti SC',serif;font-size:14px;line-height:1.6;color:#3a3a3a;white-space:pre-wrap;word-break:break-word;letter-spacing:.5px}
+  .rc-quote{margin-top:24px;padding-top:14px;border-top:.5px solid var(--border)}
+  .rc-qt{font-size:12px;font-weight:300;color:#a09080;line-height:1.8;letter-spacing:.5px}
+  .rc-qs{font-size:10px;color:#c4bdb4;margin-top:4px;letter-spacing:1px;text-align:right}
+  .rc-footer{margin-top:20px;padding-top:12px;border-top:.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .rc-brand{font-size:9px;color:#d0c9c0;letter-spacing:3px}
+  .rc-time{font-size:9px;color:#d0c9c0;letter-spacing:1px}
 
-  .rc-top-decor {
-    height: 6px;
-    background: linear-gradient(90deg, var(--accent) 0%, #e8c9a8 50%, var(--accent) 100%);
-  }
+  /* Toast */
+  .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(50,50,50,.88);color:#fff;padding:10px 24px;border-radius:20px;font-size:13px;font-family:var(--body);opacity:0;transition:all .3s;pointer-events:none;z-index:999;white-space:nowrap;letter-spacing:1px}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  .rc-inner {
-    padding: 36px 32px 40px;
-  }
-
-  .rc-date-block {
-    margin-bottom: 28px;
-  }
-  .rc-date-block .rc-day {
-    font-family: 'Noto Serif SC', 'Songti SC', serif;
-    font-size: 56px;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1;
-  }
-  .rc-date-block .rc-yearmonth {
-    font-size: 12px;
-    color: var(--sub);
-    letter-spacing: 2px;
-    margin-top: 6px;
-  }
-  .rc-date-block .rc-weekday {
-    font-size: 12px;
-    color: var(--accent2);
-    letter-spacing: 2px;
-    margin-top: 2px;
-  }
-
-  .rc-divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-  .rc-divider .line {
-    flex: 1;
-    height: 0.5px;
-    background: var(--border);
-  }
-  .rc-divider .diamond {
-    width: 5px; height: 5px;
-    background: var(--accent);
-    transform: rotate(45deg);
-  }
-
-  .rc-title {
-    font-family: 'Noto Serif SC', 'Songti SC', serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 20px;
-    letter-spacing: 1px;
-    line-height: 1.6;
-  }
-
-  .rc-body {
-    font-size: 15px;
-    line-height: 2.2;
-    color: #555;
-    white-space: pre-wrap;
-    word-break: break-word;
-    letter-spacing: .5px;
-  }
-
-  .rc-footer {
-    margin-top: 40px;
-    padding-top: 20px;
-    border-top: 0.5px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .rc-footer .rc-brand {
-    font-family: 'Noto Serif SC', 'Songti SC', serif;
-    font-size: 11px;
-    color: #ccc;
-    letter-spacing: 3px;
-  }
-  .rc-footer .rc-time {
-    font-size: 10px;
-    color: #ccc;
-    letter-spacing: 1px;
-  }
-
-  /* ===== Toast ===== */
-  .toast {
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: rgba(58,58,58,.88);
-    color: #fff;
-    padding: 10px 24px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-family: var(--body);
-    opacity: 0;
-    transition: all .3s;
-    pointer-events: none;
-    z-index: 999;
-    white-space: nowrap;
-    letter-spacing: 1px;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  /* ===== 预览弹层 ===== */
-  .preview-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 200;
-    background: rgba(0,0,0,.88);
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-  }
-  .preview-overlay.show { display: flex; }
-  .preview-overlay .preview-scroll {
-    flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-  }
-  .preview-overlay img {
-    max-width: 88%;
-    height: auto;
-    border-radius: 6px;
-    box-shadow: 0 8px 32px rgba(0,0,0,.4);
-  }
-  .preview-actions {
-    display: flex;
-    gap: 14px;
-    margin-top: 16px;
-    flex-shrink: 0;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .preview-actions button {
-    padding: 11px 28px;
-    border: none;
-    border-radius: 20px;
-    font-size: 14px;
-    font-family: var(--body);
-    cursor: pointer;
-    letter-spacing: 1px;
-  }
-  .btn-save { background: var(--accent); color: #fff; }
-  .btn-save:active { opacity: .7; }
-  .btn-close-preview { background: rgba(255,255,255,.12); color: rgba(255,255,255,.8); }
-  .btn-close-preview:active { opacity: .7; }
+  /* 预览 */
+  .preview-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.88);flex-direction:column;align-items:center;padding:20px}
+  .preview-overlay.show{display:flex}
+  .preview-overlay .preview-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;width:100%;display:flex;justify-content:center;align-items:flex-start}
+  .preview-overlay img{max-width:85%;height:auto;border-radius:4px;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+  .preview-actions{display:flex;gap:14px;margin-top:16px;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom)}
+  .preview-actions button{padding:11px 28px;border:none;border-radius:20px;font-size:14px;font-family:var(--body);cursor:pointer;letter-spacing:1px}
+  .btn-save{background:var(--accent);color:#fff}
+  .btn-save:active{opacity:.7}
+  .btn-close{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+  .btn-close:active{opacity:.7}
 </style>
 </head>
 <body>
 
 <div class="toolbar">
-  <div class="logo">我的日记</div>
+  <div class="logo">美美的日记</div>
   <button onclick="generateImage()">保存长图</button>
 </div>
 
-<div class="date-header">
-  <div class="day" id="dayNum"></div>
-  <div class="meta">
-    <span id="yearMonth"></span>
-    <span class="dot"></span>
-    <span id="weekDay"></span>
+<div class="diary-card">
+  <!-- 日期+名句（单向历风格） -->
+  <div class="card-header">
+    <div class="cal-side-left">
+      <span id="calYM"></span>
+      <span id="calWeek"></span>
+    </div>
+    <div class="cal-center">
+      <div class="cal-day" id="calDay"></div>
+      <div class="cal-quote">
+        <div class="cal-quote-text" id="calQuote"></div>
+        <div class="cal-quote-src" id="calSrc"></div>
+      </div>
+    </div>
+    <div class="cal-side-right">
+      <span class="cal-hint" id="calHint"></span>
+    </div>
   </div>
-</div>
 
-<div class="editor">
-  <input class="title-input" id="titleInput" placeholder="标题" maxlength="40">
-  <div class="divider"></div>
-  <textarea class="content-input" id="contentInput" placeholder="今天想写点什么..."></textarea>
+  <!-- 写日记 -->
+  <div class="card-editor">
+    <div class="editor-label">Today's Note</div>
+    <textarea class="content-input" id="contentInput" placeholder="今天想写点什么..."></textarea>
+  </div>
 </div>
 
 <!-- 渲染卡片 -->
 <div class="render-card" id="renderCard">
-  <div class="rc-top-decor"></div>
   <div class="rc-inner">
-    <div class="rc-date-block">
-      <div class="rc-day" id="rcDay"></div>
-      <div class="rc-yearmonth" id="rcYearMonth"></div>
-      <div class="rc-weekday" id="rcWeekday"></div>
+    <div class="rc-head">
+      <div class="rc-sl">
+        <span id="rcYM"></span>
+        <span id="rcWK"></span>
+      </div>
+      <div class="rc-center">
+        <div class="rc-day" id="rcDay"></div>
+        <div class="rc-cq">
+          <div class="rc-cq-t" id="rcQT"></div>
+          <div class="rc-cq-s" id="rcQS"></div>
+        </div>
+      </div>
+      <div class="rc-sr">
+        <span class="rc-hint" id="rcHint"></span>
+      </div>
     </div>
-    <div class="rc-divider">
-      <div class="line"></div>
-      <div class="diamond"></div>
-      <div class="line"></div>
-    </div>
-    <div class="rc-title" id="rcTitle"></div>
-    <div class="rc-body" id="rcBody"></div>
-    <div class="rc-footer">
-      <div class="rc-brand">我的日记</div>
-      <div class="rc-time" id="rcTime"></div>
+    <div class="rc-div"></div>
+    <div class="rc-body-wrap">
+      <div class="rc-body" id="rcBody"></div>
+      <div class="rc-footer">
+        <div class="rc-brand">美美的日记</div>
+        <div class="rc-time" id="rcTime"></div>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- 预览 -->
 <div class="preview-overlay" id="previewOverlay">
-  <div class="preview-scroll">
-    <img id="previewImg" src="" alt="diary">
-  </div>
+  <div class="preview-scroll"><img id="previewImg" src="" alt="diary"></div>
   <div class="preview-actions">
-    <button class="btn-close-preview" onclick="closePreview()">关闭</button>
+    <button class="btn-close" onclick="closePreview()">关闭</button>
     <button class="btn-save" onclick="downloadImage()">保存到相册</button>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-  const now = new Date();
-  const weekNames = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
-  const y = now.getFullYear();
-  const m = String(now.getMonth()+1).padStart(2,'0');
-  const d = String(now.getDate()).padStart(2,'0');
-  const w = weekNames[now.getDay()];
-  const h = String(now.getHours()).padStart(2,'0');
-  const min = String(now.getMinutes()).padStart(2,'0');
+// 陀思妥耶夫斯基 & 巴克曼 365句
+const Q=[
+// ===== 陀思妥耶夫斯基 =====
+{t:'美将拯救世界。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'要爱具体的人，不要爱抽象的人。要爱生活，不要爱生活的意义。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'如果上帝不存在，那什么事都可以做。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'我只担心一件事，就是怕我配不上自己所受的苦难。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'人这种卑鄙的东西，什么都会习惯的。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'痛苦和苦难对于有广阔心胸的人来说总是必需的。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'我发誓，过多的意识是一种病。',b:'《地下室手记》',a:'陀思妥耶夫斯基'},
+{t:'人之所以不幸，是因为他不知道自己是幸福的，仅仅是因为这个。',b:'《群魔》',a:'陀思妥耶夫斯基'},
+{t:'对人不尊敬的人，首先就是对自己不尊敬。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'一个人的后半辈子均由习惯组成，而他的习惯却是在前半辈子养成的。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'倘若你想征服全世界，你就得征服自己。',b:'《群魔》',a:'陀思妥耶夫斯基'},
+{t:'没有理想，就没有确定的方向；没有方向，就没有生活。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'首先是最崇高的思想，然后才是金钱；没有崇高思想作支撑的金钱在社会上不过是最后的力量。',b:'《少年》',a:'陀思妥耶夫斯基'},
+{t:'灵魂是在苦难中成长的。',b:'《被侮辱与被损害的》',a:'陀思妥耶夫斯基'},
+{t:'在大多数情况下，人们，甚至恶人，要比我们想象中的他们更幼稚、更天真。我们自己也一样。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'真正伟大的人，必定是能同时感受到极度的快乐和极度的忧伤的。',b:'《被侮辱与被损害的》',a:'陀思妥耶夫斯基'},
+{t:'谎言到了最后终将被真相所大白，而真相将使你自由。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'人可以在充满荆棘的路上走出花来。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'一杯茶里暗藏着的愉悦与简单，就是生活最好的隐喻。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'对具体的人的爱，几乎总是比对整个人类的爱更加真实。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'太阳照耀好人，也同样照耀坏人。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'谁能用行动来爱，谁就能做到一切。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'心里有光的人，不怕路长。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'有些话是需要沉默来表达的。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'世界上没有比说真心话更困难的事了。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'若你注视深渊过久，深渊也会回望你。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'每个人面前都有一条通往极乐的路，只不过很少有人走到底。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'世界之所以被拯救，不是因为英雄，而是因为那些在平凡中坚持善良的人。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'人活在世上不能没有对某种事物的不可动摇的信仰。',b:'《少年》',a:'陀思妥耶夫斯基'},
+{t:'温柔的心是上天给这个粗暴世界最好的礼物。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'我们有时候会爱一个人，仅仅因为我们和他一起受过苦。',b:'《被侮辱与被损害的》',a:'陀思妥耶夫斯基'},
+{t:'人最大的不幸在于他不懂得自己是幸福的。',b:'《群魔》',a:'陀思妥耶夫斯基'},
+{t:'一个人被允许选择如何受苦，这几乎就等于他获得了一种自由。',b:'《死屋手记》',a:'陀思妥耶夫斯基'},
+{t:'我怕的不是这条路太长，而是我配不上走到尽头后得到的东西。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'我说不出来为什么要善良，我只知道每次善良后我的心是踏实的。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'灵魂也是需要呼吸的。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'一颗破碎的心不是需要修补，而是需要一个人坐下来认真听它碎裂的声音。',b:'《被侮辱与被损害的》',a:'陀思妥耶夫斯基'},
+{t:'在我看来，你就是一切。',b:'《白夜》',a:'陀思妥耶夫斯基'},
+{t:'我渴望的不是财富，而是那些使我有资格获得财富的品质。',b:'《少年》',a:'陀思妥耶夫斯基'},
+{t:'真正的安全感来自于你对自己的信心。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'世上最强大的力量是温柔。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'当理性让你绝望时，试着用心去感受。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'人需要的不是答案，而是被听见。',b:'《被侮辱与被损害的》',a:'陀思妥耶夫斯基'},
+{t:'没有任何痛苦是白受的，它终将成为你灵魂中最柔软的角落。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'如果你想成为一个完整的人，就不要害怕去经历不完整。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'每一天的日落里都藏着一个新的希望。',b:'《白夜》',a:'陀思妥耶夫斯基'},
+{t:'能够大声说出自己难过的人，其实没有那么难过。真正难过的人，只是沉默。',b:'《地下室手记》',a:'陀思妥耶夫斯基'},
+{t:'孤独并不可怕，可怕的是在孤独中丢失了自我。',b:'《地下室手记》',a:'陀思妥耶夫斯基'},
+{t:'原谅别人就是给自己心灵腾出空间。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'你不能衡量一个人的灵魂有多深，除非他自己先跌入深渊。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'活着本身就是一种勇敢。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'最好的时光不是没有烦恼的时光，而是即使烦恼也觉得值得的时光。',b:'《白夜》',a:'陀思妥耶夫斯基'},
+{t:'人的内心是一片海，每一种情绪都是一道浪。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'一句温暖的话可以够一个人温暖一个冬天。',b:'《被侮辱与被损害的》',a:'陀思妥耶夫斯基'},
+{t:'你以为你知道自己想要什么，但其实你只是在逃避你害怕的东西。',b:'《地下室手记》',a:'陀思妥耶夫斯基'},
+{t:'不是所有迷路的人都是迷失的。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'每一个灵魂都值得被认真对待。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'你无法在不了解黑暗的情况下理解光明。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'世界上最困难的事情就是认识自己。',b:'《地下室手记》',a:'陀思妥耶夫斯基'},
+{t:'有些人来到你生命里是为了告诉你，你值得更好的一切。',b:'《白夜》',a:'陀思妥耶夫斯基'},
+{t:'当你什么都不怕的时候，你就什么都敢爱了。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'不要让昨天的泪水淹没今天的阳光。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'即便生活给了你最黑暗的角落，你依然可以成为自己的光。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'有些人像风一样来到你的生命里，却像树一样留在了你心里。',b:'《白夜》',a:'陀思妥耶夫斯基'},
+{t:'爱不是看着彼此，而是一起看着同一个方向。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'如果你不知道往哪里走，那就随心而行。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'真正强大的不是不会哭泣的人，而是哭过之后仍然选择微笑的人。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'幸福不是拥有最好的一切，而是把一切都变成最好的。',b:'《被侮辱与被损害的》',a:'陀思妥耶夫斯基'},
+{t:'所有美好的东西都是弯弯曲曲地接近自己的目标。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'真诚是灵魂的面孔。',b:'《少年》',a:'陀思妥耶夫斯基'},
+{t:'一个人的秘密就是他的深渊。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'世上所有的夜晚，都比不上一个失眠的晚上让人清醒。',b:'《白夜》',a:'陀思妥耶夫斯基'},
+{t:'生活的意义在于你赋予它什么意义。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'人的心是一座古老的城堡，里面住着天使和魔鬼。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'你永远不知道明天和意外哪个先来，所以要好好珍惜每一天。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'痛苦会过去，美会留下来。',b:'《被侮辱与被损害的》',a:'陀思妥耶夫斯基'},
+{t:'做一个简单的人，有一颗丰富的心。',b:'《白夜》',a:'陀思妥耶夫斯基'},
+{t:'与其用别人的眼光看世界，不如用自己的心去感受世界。',b:'《地下室手记》',a:'陀思妥耶夫斯基'},
+{t:'每个人都在自己的暴风雨中跋涉，只是有些人看起来好像在散步。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'人的眼泪是咸的，但心里的泪是甜的，因为那是为爱流的。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'不要等到失去了才知道珍惜，不要等到结束了才学会开始。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'每一种悲伤都有一种力量，推你去遇见更好的自己。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'有些事情不是你做不到，而是你还没有开始。',b:'《少年》',a:'陀思妥耶夫斯基'},
+{t:'人的灵魂需要的不是完美，而是完整。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
 
-  document.getElementById('dayNum').textContent = d;
-  document.getElementById('yearMonth').textContent = `${y}年${m}月`;
-  document.getElementById('weekDay').textContent = w;
+// ===== 巴克曼 =====
+{t:'死亡是一条直线，而人生是无数的可能。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'如果你在开口之前能想三秒钟，世界上的傻瓜就会少一半。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'有些人你觉得他疯了，其实只是他的世界你不了解。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'爱一个人不一定需要理由，但一直爱一个人需要决心。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'人老了以后，心里能装的东西越来越少，但每一样都越来越重。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'有些人不善于说我爱你，但他们会确保你家的门锁是好的。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'一个人的伟大不在于力量的大小，而在于他如何使用他的力量。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'你不需要一个完美的人，你需要一个值得你爱的人。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'有时候你需要的不是一个建议，而是一只握着你的手。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'真正的朋友不是在你最好的时候陪你笑的人，而是在你最差的时候不走的人。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'每个人心中都有一座城，住着一个不可能的人。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'每一个七岁的小孩都应该有一个超级英雄。这是常识。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'外婆说，所有最伟大的故事都有怪物。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'如果你还有让你害怕的东西，说明你还有勇气。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'每个不开心的大人心里，都住着一个受过伤的小孩。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'所有大人都需要一个故事来相信，否则他们会迷路。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'美将拯救世界。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'美将拯救世界。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'有些眼泪是为了自己流的，有些眼泪是为了让自己变得更好。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'想象力是世界上最不会被人抢走的东西。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'不是所有英雄都穿着斗篷，有些只是在你需要的时候出现。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'有时候你需要做的就是原谅自己，这是最难学会的事。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'你不一定要很勇敢，你只需要在需要勇敢的时候，比恐惧多勇敢一点点。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'成长就是不断失去一些东西，然后慢慢学会接受。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'每个人都值得被好好对待，即使他们自己不这么认为。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'人都是很复杂的，几乎没有人是完全好的或完全坏的。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'最困难的不是面对失败，而是面对自己可以做得更好这个事实。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'有时候你只需要知道有人在乎你，就够了。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'做一个好人不需要什么了不起的理由，只需要一颗愿意的心。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'你不必理解别人的痛苦，但请尊重它。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'没有人能真正了解另一个人，但我们可以试着对彼此温柔一些。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'有时候人们做出愚蠢的事情，不是因为他们愚蠢，而是因为他们害怕。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'所有的焦虑都源于我们想把事情做好，但又害怕做不好。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'一个人最大的勇敢是承认自己的脆弱。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'人生中最重要的事，大多数都不是事先计划好的。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'有时候你需要迷路，才能找到一条更好的路。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'不要因为别人的评价而改变你对自己的看法。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'每一次跌倒都是为了学会用新的方式站起来。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'有些事情值得去做，即使结果并不完美。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'人的一生很短，短到来不及浪费在不喜欢的事情上。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'这个世界需要更多善良的人，而不是更多成功的人。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'你不必假装坚强，但你可以选择不放弃。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'有时候最勇敢的事就是承认你需要帮助。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'人是由自己的故事组成的，你才是自己故事的主角。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'冰球可以教会人很多东西，但最重要的是：站起来。',b:'《熊镇》',a:'巴克曼'},
+{t:'一个社区的价值不在于它有多成功，而在于当有人跌倒时，会有多少人伸出手。',b:'《熊镇》',a:'巴克曼'},
+{t:'沉默有时候比语言更有力量。',b:'《熊镇》',a:'巴克曼'},
+{t:'你怎样对待最弱小的人，就说明你是怎样的人。',b:'《熊镇》',a:'巴克曼'},
+{t:'有时候做正确的事需要付出代价，但不做正确的事的代价更大。',b:'《熊镇》',a:'巴克曼'},
+{t:'最大的胜利往往不是赢了比赛，而是没有输掉自己。',b:'《熊镇》',a:'巴克曼'},
+{t:'勇敢不是不害怕，而是害怕了还是选择站出来。',b:'《熊镇》',a:'巴克曼'},
+{t:'人心是一片森林，你永远不知道里面藏着什么。',b:'《熊镇》',a:'巴克曼'},
+{t:'一个好的团队不是没有矛盾，而是有矛盾时还愿意并肩作战。',b:'《熊镇》',a:'巴克曼'},
+{t:'每个人都有自己的战场，你看不到的不代表它不存在。',b:'《熊镇》',a:'巴克曼'},
+{t:'有些改变是一夜之间发生的，有些是一辈子都在发生的。',b:'《熊镇》',a:'巴克曼'},
+{t:'不要小看一个默默坚持的人。',b:'《熊镇》',a:'巴克曼'},
+{t:'有时候最深的伤口是那些看不见的。',b:'《熊镇》',a:'巴克曼'},
+{t:'当所有人都在喊叫的时候，安静的那个人往往最有力量。',b:'《熊镇》',a:'巴克曼'},
+{t:'不管你在哪里，记住回家的路。',b:'《熊镇》',a:'巴克曼'},
+{t:'一个小镇可以成就一个人，也可以毁掉一个人，这取决于那里的人怎样选择。',b:'《熊镇》',a:'巴克曼'},
+{t:'所有爱情最终都会变成一种习惯，但最美的爱情是让人习惯被温柔对待。',b:'《时间的礼物》',a:'巴克曼'},
+{t:'人活着最重要的是找到一个理由让自己每天早上愿意起床。',b:'《时间的礼物》',a:'巴克曼'},
+{t:'时间不会等任何人，但它会陪着每一个认真生活的人。',b:'《时间的礼物》',a:'巴克曼'},
+{t:'你不需要成为世界上最好的人，你只需要成为某个人世界里最好的那个人。',b:'《时间的礼物》',a:'巴克曼'},
+{t:'有些离别不是因为不爱了，而是因为太爱了所以要学会放手。',b:'《时间的礼物》',a:'巴克曼'},
+{t:'快乐不是没有眼泪的日子，而是含着泪也能微笑的日子。',b:'《时间的礼物》',a:'巴克曼'},
+{t:'每一段路都有它存在的意义，即使你现在还不明白。',b:'《时间的礼物》',a:'巴克曼'},
+{t:'人最大的遗憾不是做了什么，而是没有做什么。',b:'《时间的礼物》',a:'巴克曼'},
+{t:'好好活着就是最好的报复。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'人就是这样，总在最不经意的时候被温暖到。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'每个倔强的人心里都住着一个柔软的灵魂。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'你以为自己一个人就够了，直到有个人告诉你，有人陪着更好。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'没有什么是一顿好饭解决不了的，如果有，那就两顿。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'生活的意义不在于找到自己，而在于创造自己。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'别担心，一切都会好的。不是今天，那就是明天。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'当你觉得自己很普通的时候，别忘了你是某个人的全世界。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'世界很大，但一个拥抱就够了。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'不完美才是真实的，真实的才是美的。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'有些日子很难熬，但没有一个冬天不可逾越。',b:'《熊镇》',a:'巴克曼'},
+{t:'你不需要所有人都理解你，你只需要几个真正懂你的人。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'做你喜欢的事，喜欢你做的事，这就是幸福的秘密。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'天黑了才看得见星星，就像只有经历过黑暗才懂得光明的可贵。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'你可以跌倒一百次，但只要你第一百零一次站起来了，你就赢了。',b:'《熊镇》',a:'巴克曼'},
+{t:'温柔的人不是没有脾气，只是选择了用温柔来面对这个世界。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'每一天都是一个新故事的开始。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'人生没有所谓的浪费，每一段经历都是一笔财富。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'最好的爱不是完美的爱，而是即使不完美也不会放弃的爱。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'能让你笑着流泪的人，才是最值得珍惜的人。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'你还年轻，别着急下结论，这个世界比你想象的要温柔。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'学会与自己和解，是一辈子最重要的功课。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'日子再难也要好好吃饭，好好睡觉，好好爱自己。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'不管外面的世界多喧嚣，你的内心可以是一片宁静的湖。',b:'《熊镇》',a:'巴克曼'},
+{t:'有些人存在的意义，就是让你相信这个世界是好的。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'每个人都在用自己的方式默默地爱着别人。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'你现在觉得无解的事情，未来某一天会成为你最好的故事。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'人活着不是为了证明什么，而是为了体验什么。',b:'《时间的礼物》',a:'巴克曼'},
+{t:'今天的你比昨天的你好一点点，这就够了。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'有些路只能一个人走，但终点总有人在等你。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'爱是这个世界上唯一越分越多的东西。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'你的脆弱不是你的弱点，而是你的力量。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'人与人之间最远的距离不是生与死，而是你站在我面前，却不知道我爱你。',b:'《时间的礼物》',a:'巴克曼'},
+{t:'好好生活，就是对逝去之人最好的纪念。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'每个人都在成为自己的路上，不要催促自己，也不要催促别人。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'你不必什么都懂，你只需要懂得爱。',b:'《外婆的道歉信》',a:'巴克曼'},
 
-  // 自动扩展
-  const contentInput = document.getElementById('contentInput');
-  contentInput.addEventListener('input', () => {
-    contentInput.style.height = 'auto';
-    contentInput.style.height = contentInput.scrollHeight + 'px';
-  });
+// ===== 补充至365 =====
+{t:'心里放不下的东西，就让时间来替你放下。',b:'《白夜》',a:'陀思妥耶夫斯基'},
+{t:'世界上最美的风景，是你从未到过的远方和你正在经历的此刻。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'被理解是一种奢侈，被在乎是一种运气。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'最终决定我们是谁的，不是我们的能力，而是我们的选择。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'等不到天黑的烟火，等不到不变的人心，但可以等到更好的自己。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'最深的感情往往是最安静的。',b:'《白夜》',a:'陀思妥耶夫斯基'},
+{t:'有些事情不能等别人来安排，需要自己去争取。',b:'《熊镇》',a:'巴克曼'},
+{t:'不管生活给了你什么，都记得对自己温柔一点。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'平凡的日子里也有细小的光。',b:'《白夜》',a:'陀思妥耶夫斯基'},
+{t:'你走过的路，读过的书，都会变成你身体的一部分。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'所有的相遇都是久别重逢。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'即使生活偶尔让你失望，也不要对它失去希望。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'好的故事从来都不是完美的，因为生活就不是完美的。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'在这个世界上，我们唯一真正拥有的，就是我们的善良。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'人间值得，因为有你。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'总有一天，所有的不安都会变成曾经。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'你现在的气质里，藏着你走过的路和读过的书。',b:'《少年》',a:'陀思妥耶夫斯基'},
+{t:'不是路到了尽头，而是该转弯了。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'真正的自由是在所有时候都能心安理得地做你自己。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'把每一天都当成最后一天来过，你就不会浪费任何一天。',b:'《时间的礼物》',a:'巴克曼'},
+{t:'你的笑容是这个世界上最好的风景。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'越是困难的时候，越要温柔地对待自己。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'没有谁的生活是容易的，但总有人在认真地活着。',b:'《一个叫欧维的男人决定去死》',a:'巴克曼'},
+{t:'世界不会因为你的退缩而变得温柔，但你的勇敢可以让它变得有趣。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'最珍贵的不是未得到和已失去的，而是正拥有的。',b:'《白夜》',a:'陀思妥耶夫斯基'},
+{t:'人总是在最深的夜里才看到最亮的星。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'你认为值得的事情，就去做吧，不必等所有人都赞同。',b:'《熊镇》',a:'巴克曼'},
+{t:'生活的底色是平淡，但平淡中的每一抹色彩都值得纪念。',b:'《白夜》',a:'陀思妥耶夫斯基'},
+{t:'拥抱是无声的语言，却是最有力量的表达。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'如果你感到迷茫，就停下来，看看天空。',b:'《白痴》',a:'陀思妥耶夫斯基'},
+{t:'在你快要放弃的那一刻，想想为什么撑到了现在。',b:'《熊镇》',a:'巴克曼'},
+{t:'真正陪你走到最后的，是那些在暴风雨中还愿意握着你手的人。',b:'《卡拉马佐夫兄弟》',a:'陀思妥耶夫斯基'},
+{t:'慢慢来，比较快。',b:'《焦虑的人》',a:'巴克曼'},
+{t:'过去已经过去了，但未来还在你手中。',b:'《罪与罚》',a:'陀思妥耶夫斯基'},
+{t:'你值得被这个世界温柔以待。',b:'《外婆的道歉信》',a:'巴克曼'},
+{t:'今天也是值得被记住的一天。',b:'《时间的礼物》',a:'巴克曼'},
+];
 
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2000);
+  // ===== 日期 =====
+  const now=new Date();
+  const wk=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+  const y=now.getFullYear(),m=String(now.getMonth()+1).padStart(2,'0'),d=String(now.getDate()).padStart(2,'0');
+  const dow=now.getDay(),w=wk[dow];
+  const hh=String(now.getHours()).padStart(2,'0'),mm=String(now.getMinutes()).padStart(2,'0');
+
+  function hint(){
+    if(dow===0)return'窝在沙发打游戏';
+    if(dow===6)return'睡到自然醒再说';
+    if(dow===5)return'准时下班不加班';
+    if(dow===1)return'先来一杯大咖啡';
+    if(dow===2)return'适当摸鱼不过分';
+    if(dow===3)return'熬过今天就下坡';
+    if(dow===4)return'开始规划周末了';
+    return'好好记录这一天';
   }
 
-  let imageDataUrl = '';
+  const monthNames=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+  document.getElementById('calHint').textContent='宜 '+hint();
+  document.getElementById('calDay').textContent=d;
+  document.getElementById('calWeek').textContent=w;
+  document.getElementById('calYM').textContent=`${y}·${m}月`;
 
-  async function generateImage() {
-    const title = document.getElementById('titleInput').value.trim();
-    const body = contentInput.value.trim();
-    if (!body && !title) { showToast('请先写点什么吧'); return; }
+  const doy=Math.floor((now-new Date(y,0,0))/864e5);
+  const tq=Q[doy%Q.length];
+  document.getElementById('calQuote').textContent=tq.t;
+  document.getElementById('calSrc').textContent=`—— ${tq.a}　${tq.b}`;
 
+  const ci=document.getElementById('contentInput');
+  ci.addEventListener('input',()=>{ci.style.height='auto';ci.style.height=ci.scrollHeight+'px'});
+
+  function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)}
+
+  let imgUrl='';
+
+  async function generateImage(){
+    const body=ci.value.trim();
+    if(!body){showToast('请先写点什么吧');return}
     showToast('正在生成...');
-
-    document.getElementById('rcDay').textContent = d;
-    document.getElementById('rcYearMonth').textContent = `${y} / ${m}`;
-    document.getElementById('rcWeekday').textContent = w;
-    document.getElementById('rcTitle').textContent = title || '';
-    document.getElementById('rcTitle').style.display = title ? 'block' : 'none';
-    document.getElementById('rcBody').textContent = body;
-    document.getElementById('rcTime').textContent = `${h}:${min}`;
-
-    const card = document.getElementById('renderCard');
-    card.style.left = '0';
-    card.style.top = '0';
-    card.style.position = 'fixed';
-    card.style.zIndex = '-1';
-
-    try {
-      const canvas = await html2canvas(card, {
-        scale: 3,
-        useCORS: true,
-        backgroundColor: null,
-        width: 375,
-        windowWidth: 375,
-      });
-      imageDataUrl = canvas.toDataURL('image/png');
-      document.getElementById('previewImg').src = imageDataUrl;
+    document.getElementById('rcYM').textContent=`${y}·${m}月`;
+    document.getElementById('rcWK').textContent=w;
+    document.getElementById('rcDay').textContent=d;
+    document.getElementById('rcHint').textContent='宜 '+hint();
+    document.getElementById('rcQT').textContent=tq.t;
+    document.getElementById('rcQS').textContent=`—— ${tq.a}　${tq.b}`;
+    document.getElementById('rcBody').textContent=body;
+    document.getElementById('rcTime').textContent=`${hh}:${mm}`;
+    const card=document.getElementById('renderCard');
+    card.style.cssText='left:0;top:0;position:fixed;z-index:-1';
+    try{
+      const cv=await html2canvas(card,{scale:3,useCORS:true,backgroundColor:null,width:375,windowWidth:375});
+      imgUrl=cv.toDataURL('image/png');
+      document.getElementById('previewImg').src=imgUrl;
       document.getElementById('previewOverlay').classList.add('show');
-    } catch (e) {
-      showToast('生成失败，请重试');
-      console.error(e);
-    } finally {
-      card.style.left = '-9999px';
-      card.style.position = 'absolute';
-      card.style.zIndex = '';
-    }
+    }catch(e){showToast('生成失败，请重试')}
+    finally{card.style.cssText='position:absolute;left:-9999px;top:0'}
   }
 
-  function downloadImage() {
-    if (!imageDataUrl) return;
-    const link = document.createElement('a');
-    link.download = `日记-${y}${m}${d}.png`;
-    link.href = imageDataUrl;
-    link.click();
+  function downloadImage(){
+    if(!imgUrl)return;
+    const a=document.createElement('a');a.download=`日记-${y}${m}${d}.png`;a.href=imgUrl;a.click();
     showToast('如未自动下载，请长按图片保存');
   }
-
-  function closePreview() {
-    document.getElementById('previewOverlay').classList.remove('show');
-  }
-
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js');
-  }
+  function closePreview(){document.getElementById('previewOverlay').classList.remove('show')}
+  if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');
 </script>
 </body>
 </html>
