@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>我的日记</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="我的日记">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#5b7a5e">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #faf8f5;
+    --card: #ffffff;
+    --text: #2c2c2c;
+    --sub: #999;
+    --accent: #5b7a5e;
+    --border: #e8e4df;
+    --line: #e8e4df;
+  }
+
+  body {
+    font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* ===== Top toolbar ===== */
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+  .toolbar h1 { font-size: 18px; font-weight: 600; letter-spacing: 1px; }
+  .toolbar button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity .2s;
+  }
+  .toolbar button:active { opacity: .7; }
+
+  /* ===== Editor area ===== */
+  .editor {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .date-display {
+    font-size: 13px;
+    color: var(--sub);
+    margin-bottom: 12px;
+  }
+
+  .title-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-size: 22px;
+    font-weight: 600;
+    background: transparent;
+    color: var(--text);
+    margin-bottom: 16px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .title-input::placeholder { color: #ccc; }
+
+  .content-input {
+    width: 100%;
+    min-height: 300px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    line-height: 2;
+    background: transparent;
+    color: var(--text);
+    resize: none;
+    background-image: repeating-linear-gradient(
+      transparent, transparent 31px, var(--line) 31px, var(--line) 32px
+    );
+    background-size: 100% 32px;
+    background-position-y: 0;
+    padding: 0;
+  }
+  .content-input::placeholder { color: #ccc; }
+
+  /* ===== Render card (for screenshot) ===== */
+  .render-card {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    width: 375px;
+    background: #fff;
+    padding: 40px 28px 48px;
+    font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  }
+  .render-card .rc-header {
+    text-align: center;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .render-card .rc-date {
+    font-size: 13px;
+    color: var(--sub);
+    letter-spacing: 1px;
+  }
+  .render-card .rc-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--text);
+    text-align: center;
+  }
+  .render-card .rc-body {
+    font-size: 16px;
+    line-height: 2;
+    color: #444;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .render-card .rc-footer {
+    margin-top: 36px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+    text-align: center;
+    font-size: 11px;
+    color: #ccc;
+    letter-spacing: 2px;
+  }
+
+  /* ===== Toast ===== */
+  .toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(0,0,0,.75);
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 20px;
+    font-size: 14px;
+    opacity: 0;
+    transition: all .3s;
+    pointer-events: none;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ===== Preview overlay ===== */
+  .preview-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(0,0,0,.85);
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  .preview-overlay.show { display: flex; }
+  .preview-overlay .preview-scroll {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .preview-overlay img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.3);
+  }
+  .preview-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    flex-shrink: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .preview-actions button {
+    padding: 12px 32px;
+    border: none;
+    border-radius: 24px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .btn-save { background: var(--accent); color: #fff; }
+  .btn-close-preview { background: rgba(255,255,255,.15); color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <h1>我的日记</h1>
+  <button onclick="generateImage()">保存长图</button>
+</div>
+
+<!-- Editor -->
+<div class="editor">
+  <div class="date-display" id="dateDisplay"></div>
+
+  <input class="title-input" id="titleInput" placeholder="标题..." maxlength="40">
+  <textarea class="content-input" id="contentInput" placeholder="写下你的心情..."></textarea>
+</div>
+
+<!-- Render card (off-screen, used for screenshot) -->
+<div class="render-card" id="renderCard">
+  <div class="rc-header">
+    <div class="rc-date" id="rcDate"></div>
+  </div>
+  <div class="rc-title" id="rcTitle"></div>
+  <div class="rc-body" id="rcBody"></div>
+  <div class="rc-footer">- 我的日记 -</div>
+</div>
+
+<!-- Preview overlay -->
+<div class="preview-overlay" id="previewOverlay">
+  <div class="preview-scroll">
+    <img id="previewImg" src="" alt="diary">
+  </div>
+  <div class="preview-actions">
+    <button class="btn-close-preview" onclick="closePreview()">关闭</button>
+    <button class="btn-save" onclick="downloadImage()">保存到相册</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ===== Date =====
+  const now = new Date();
+  const weekDays = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+  const dateStr = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}  ${weekDays[now.getDay()]}`;
+  document.getElementById('dateDisplay').textContent = dateStr;
+
+  // ===== Auto-resize textarea =====
+  const contentInput = document.getElementById('contentInput');
+  contentInput.addEventListener('input', () => {
+    contentInput.style.height = 'auto';
+    contentInput.style.height = contentInput.scrollHeight + 'px';
+  });
+
+  // ===== Toast =====
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  // ===== Generate image =====
+  let imageDataUrl = '';
+
+  async function generateImage() {
+    const title = document.getElementById('titleInput').value.trim();
+    const body = contentInput.value.trim();
+    if (!body && !title) { showToast('请先写点什么吧'); return; }
+
+    showToast('正在生成长图...');
+
+    // Fill render card
+    document.getElementById('rcDate').textContent = dateStr;
+    document.getElementById('rcTitle').textContent = title || '无题';
+    document.getElementById('rcBody').textContent = body;
+
+    const card = document.getElementById('renderCard');
+    card.style.left = '0';
+    card.style.top = '0';
+    card.style.position = 'fixed';
+    card.style.zIndex = '-1';
+
+    try {
+      const canvas = await html2canvas(card, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        width: 375,
+        windowWidth: 375,
+      });
+
+      imageDataUrl = canvas.toDataURL('image/png');
+      document.getElementById('previewImg').src = imageDataUrl;
+      document.getElementById('previewOverlay').classList.add('show');
+    } catch (e) {
+      showToast('生成失败，请重试');
+      console.error(e);
+    } finally {
+      card.style.left = '-9999px';
+      card.style.position = 'absolute';
+      card.style.zIndex = '';
+    }
+  }
+
+  // ===== Download =====
+  function downloadImage() {
+    if (!imageDataUrl) return;
+    const link = document.createElement('a');
+    link.download = `diary-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}.png`;
+    link.href = imageDataUrl;
+    link.click();
+    showToast('如未自动下载，请长按图片保存');
+  }
+
+  function closePreview() {
+    document.getElementById('previewOverlay').classList.remove('show');
+  }
+
+  // ===== 注册 Service Worker =====
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js');
+  }
+</script>
+</body>
+</html>
