@@ -42,7 +42,7 @@
   .card-header{padding:24px 24px 20px;display:flex;align-items:stretch}
 
   /* 左侧竖排：日期+星期 */
-  .cal-side-left{writing-mode:vertical-rl;display:flex;align-items:center;gap:12px;padding:8px 14px 8px 0;font-family:var(--serif);font-size:13px;color:#8a8078;letter-spacing:4px;border-right:.5px solid var(--border)}
+  .cal-side-left{writing-mode:vertical-rl;text-orientation:upright;display:flex;align-items:center;gap:12px;padding:8px 14px 8px 0;font-family:var(--serif);font-size:12px;color:#8a8078;letter-spacing:3px;border-right:.5px solid var(--border)}
 
   /* 中间大号日期+名句 */
   .cal-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0}
@@ -52,22 +52,26 @@
   .cal-quote-src{font-size:11px;color:#a89880;margin-top:8px;letter-spacing:2px}
 
   /* 右侧竖排：趣味文案 */
-  .cal-side-right{writing-mode:vertical-rl;display:flex;align-items:center;padding:8px 0 8px 14px;letter-spacing:4px;border-left:.5px solid var(--border)}
-  .cal-side-right .cal-hint{font-family:var(--serif);font-size:13px;color:var(--accent);font-weight:600;letter-spacing:5px}
+  .cal-side-right{writing-mode:vertical-rl;text-orientation:upright;display:flex;align-items:center;padding:8px 0 8px 14px;letter-spacing:3px;border-left:.5px solid var(--border)}
+  .cal-side-right .cal-hint{font-family:var(--serif);font-size:12px;color:var(--accent);font-weight:600;letter-spacing:4px}
 
 
   /* 写日记区（卡片内） */
-  .card-editor{padding:0 32px 32px;border-top:.5px solid var(--border);margin-top:4px}
+  .card-editor{padding:0 32px 32px;margin-top:0}
   .editor-label{display:none}
   .content-input{
     width:100%;min-height:300px;border:none;outline:none;
-    font-family:var(--body);font-size:16px;line-height:1.6;
+    font-family:var(--body);font-size:16px;line-height:25.6px;
     color:#4a4038;resize:none;letter-spacing:1px;
-    margin-top:20px;
-    background:repeating-linear-gradient(transparent,transparent 31px,rgba(180,160,120,.1) 31px,rgba(180,160,120,.1) 32px);
-    background-size:100% 32px;
+    margin-top:8px;padding-top:0;
+    background-color:transparent;
+    background-image:repeating-linear-gradient(transparent,transparent calc(25.6px - 1px),rgba(180,160,120,.12) calc(25.6px - 1px),rgba(180,160,120,.12) 25.6px);
+    background-size:100% 25.6px;
+    background-position-y:0;
+    -webkit-appearance:none;
+    -webkit-text-size-adjust:100%;
   }
-  .content-input::placeholder{color:#c4b8a4;font-size:15px}
+  .content-input::placeholder{color:#c4b8a4;font-size:15px;line-height:25.6px}
 
   /* ===== 渲染卡片（长图） ===== */
   /* ===== 渲染卡片（长图） ===== */
@@ -75,13 +79,13 @@
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E")}
   .rc-inner{padding:0}
   .rc-head{display:flex;align-items:stretch;padding:16px 14px}
-  .rc-sl{writing-mode:vertical-rl;display:flex;align-items:center;gap:8px;padding:4px 10px 4px 0;font-size:10px;color:#8a8078;letter-spacing:3px;border-right:.5px solid var(--border)}
+  .rc-sl{writing-mode:vertical-rl;text-orientation:upright;display:flex;align-items:center;gap:8px;padding:4px 10px 4px 0;font-size:10px;color:#8a8078;letter-spacing:3px;border-right:.5px solid var(--border)}
   .rc-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 8px}
   .rc-day{font-size:56px;font-weight:700;line-height:1;color:var(--text)}
   .rc-cq{margin-top:6px;text-align:center;padding:0 4px}
   .rc-cq-t{font-size:11px;font-weight:400;color:#6a6058;line-height:1.8;letter-spacing:.5px}
   .rc-cq-s{font-size:9px;color:#a89880;margin-top:4px;letter-spacing:1.5px}
-  .rc-sr{writing-mode:vertical-rl;display:flex;align-items:center;padding:4px 0 4px 10px;letter-spacing:3px;border-left:.5px solid var(--border)}
+  .rc-sr{writing-mode:vertical-rl;text-orientation:upright;display:flex;align-items:center;padding:4px 0 4px 10px;letter-spacing:3px;border-left:.5px solid var(--border)}
   .rc-sr .rc-hint{font-size:10px;color:var(--accent);font-weight:600;letter-spacing:4px}
   .rc-div{height:.5px;background:var(--border);margin:0 24px}
   .rc-body-wrap{padding:14px 32px 28px}
@@ -178,7 +182,7 @@
   <div class="preview-scroll"><img id="previewImg" src="" alt="diary"></div>
   <div class="preview-actions">
     <button class="btn-close" onclick="closePreview()">关闭</button>
-    <button class="btn-save" onclick="downloadImage()">保存到相册</button>
+    <button class="btn-save" onclick="downloadImage()">保存 / 分享</button>
   </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -439,7 +443,7 @@ const Q=[
   document.getElementById('calHint').textContent='宜 '+hint();
   document.getElementById('calDay').textContent=d;
   document.getElementById('calWeek').textContent=w;
-  document.getElementById('calYM').textContent=`${y}·${m}月`;
+  document.getElementById('calYM').textContent=`${y}年${m}月`;
 
   const doy=Math.floor((now-new Date(y,0,0))/864e5);
   const tq=Q[doy%Q.length];
@@ -457,7 +461,7 @@ const Q=[
     const body=ci.value.trim();
     if(!body){showToast('请先写点什么吧');return}
     showToast('正在生成...');
-    document.getElementById('rcYM').textContent=`${y}·${m}月`;
+    document.getElementById('rcYM').textContent=`${y}年${m}月`;
     document.getElementById('rcWK').textContent=w;
     document.getElementById('rcDay').textContent=d;
     document.getElementById('rcHint').textContent='宜 '+hint();
@@ -476,10 +480,28 @@ const Q=[
     finally{card.style.cssText='position:absolute;left:-9999px;top:0'}
   }
 
-  function downloadImage(){
+  async function downloadImage(){
     if(!imgUrl)return;
-    const a=document.createElement('a');a.download=`日记-${y}${m}${d}.png`;a.href=imgUrl;a.click();
-    showToast('如未自动下载，请长按图片保存');
+    // 优先用 Web Share API（iOS 支持）
+    if(navigator.share && navigator.canShare){
+      try{
+        const res=await fetch(imgUrl);
+        const blob=await res.blob();
+        const file=new File([blob],`日记-${y}${m}${d}.png`,{type:'image/png'});
+        if(navigator.canShare({files:[file]})){
+          await navigator.share({files:[file]});
+          return;
+        }
+      }catch(e){}
+    }
+    // 回退：新窗口打开图片
+    const w2=window.open('');
+    if(w2){
+      w2.document.write(`<img src="${imgUrl}" style="width:100%"><p style="text-align:center;color:#999;font-size:14px;margin-top:12px">长按图片保存到相册</p>`);
+      w2.document.title='日记长图';
+    }else{
+      showToast('长按上方图片即可保存');
+    }
   }
   function closePreview(){document.getElementById('previewOverlay').classList.remove('show')}
   if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');
