@@ -61,17 +61,17 @@
   .editor-label{display:none}
   .content-input{
     width:100%;min-height:300px;border:none;outline:none;
-    font-family:var(--body);font-size:16px;line-height:25.6px;
+    font-family:var(--body);font-size:16px;line-height:32px;
     color:#4a4038;resize:none;letter-spacing:1px;
-    margin-top:8px;padding-top:0;
-    background-color:transparent;
-    background-image:repeating-linear-gradient(transparent,transparent calc(25.6px - 1px),rgba(180,160,120,.12) calc(25.6px - 1px),rgba(180,160,120,.12) 25.6px);
-    background-size:100% 25.6px;
-    background-position-y:0;
+    margin-top:8px;
+    padding:0;
+    background:transparent repeating-linear-gradient(to bottom,transparent 0px,transparent 31px,rgba(180,160,120,.15) 31px,rgba(180,160,120,.15) 32px);
+    background-size:100% 32px;
+    background-attachment:local;
     -webkit-appearance:none;
     -webkit-text-size-adjust:100%;
   }
-  .content-input::placeholder{color:#c4b8a4;font-size:15px;line-height:25.6px}
+  .content-input::placeholder{color:#c4b8a4;font-size:15px}
 
   /* ===== 渲染卡片（长图） ===== */
   /* ===== 渲染卡片（长图） ===== */
@@ -480,28 +480,35 @@ const Q=[
     finally{card.style.cssText='position:absolute;left:-9999px;top:0'}
   }
 
-  async function downloadImage(){
+  function downloadImage(){
     if(!imgUrl)return;
-    // 优先用 Web Share API（iOS 支持）
-    if(navigator.share && navigator.canShare){
-      try{
-        const res=await fetch(imgUrl);
-        const blob=await res.blob();
-        const file=new File([blob],`日记-${y}${m}${d}.png`,{type:'image/png'});
-        if(navigator.canShare({files:[file]})){
-          await navigator.share({files:[file]});
-          return;
-        }
-      }catch(e){}
+    // iOS Safari: 把图片单独展示，方便长按保存
+    const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent);
+    if(isIOS){
+      // 创建全屏图片页面
+      const overlay=document.createElement('div');
+      overlay.style.cssText='position:fixed;inset:0;z-index:999;background:#fff;display:flex;flex-direction:column;align-items:center;padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch';
+      const tip=document.createElement('p');
+      tip.textContent='长按下方图片 → 添加到照片';
+      tip.style.cssText='color:#999;font-size:14px;margin:10px 0 16px;letter-spacing:1px';
+      const img=document.createElement('img');
+      img.src=imgUrl;
+      img.style.cssText='width:92%;border-radius:4px;box-shadow:0 2px 16px rgba(0,0,0,.1)';
+      const btn=document.createElement('button');
+      btn.textContent='返回';
+      btn.style.cssText='margin-top:20px;padding:10px 32px;border:none;border-radius:20px;background:#d4a24e;color:#fff;font-size:14px;cursor:pointer';
+      btn.onclick=()=>overlay.remove();
+      overlay.appendChild(tip);
+      overlay.appendChild(img);
+      overlay.appendChild(btn);
+      document.body.appendChild(overlay);
+      return;
     }
-    // 回退：新窗口打开图片
-    const w2=window.open('');
-    if(w2){
-      w2.document.write(`<img src="${imgUrl}" style="width:100%"><p style="text-align:center;color:#999;font-size:14px;margin-top:12px">长按图片保存到相册</p>`);
-      w2.document.title='日记长图';
-    }else{
-      showToast('长按上方图片即可保存');
-    }
+    // 非iOS：直接下载
+    const a=document.createElement('a');
+    a.download=`日记-${y}${m}${d}.png`;
+    a.href=imgUrl;
+    a.click();
   }
   function closePreview(){document.getElementById('previewOverlay').classList.remove('show')}
   if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');
